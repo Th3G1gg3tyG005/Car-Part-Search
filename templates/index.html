@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Parts Search</title>
+</head>
+<body>
+    <h1>Search for Car Parts</h1>
+    <form method="post">
+        <label for="platform">Search Platform:</label>
+        <select id="platform" name="platform" required>
+            <option value="ebay">eBay</option>
+            <option value="amazon">Amazon</option>
+            <option value="google">Google</option>
+            <option value="rockauto">RockAuto</option>
+        </select><br>
+
+        <label for="make">Make:</label>
+        <input type="text" id="make" name="make" required><br>
+
+        <label for="model">Model:</label>
+        <input type="text" id="model" name="model" required><br>
+
+        <label for="year">Year:</label>
+        <input type="text" id="year" name="year" required><br>
+
+        <label for="trim">Trim:</label>
+        <input type="text" id="trim" name="trim" required><br>
+
+        <label for="engine">Engine:</label>
+        <input type="text" id="engine" name="engine" required><br>
+
+        <label for="part_number">Part Number (optional):</label>
+        <input type="text" id="part_number" name="part_number"><br>
+
+        <label for="keywords">Keywords (optional):</label>
+        <input type="text" id="keywords" name="keywords"><br>
+
+        <input type="submit" value="Search">
+    </form>
+</body>
+</html>
