@@ -3,30 +3,19 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 import time
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 app = Flask(__name__)
-
-# Sample repair data
-repair_data = [
-    {
-        'make_model': 'Honda Accord',
-        'link': 'https://charm.li/honda-accord-manual',
-        'description': 'Comprehensive service manual covering engine, transmission, and electrical systems.'
-    },
-    {
-        'make_model': 'Toyota Camry',
-        'link': 'https://charm.li/toyota-camry-manual',
-        'description': 'Detailed guide for repairs and maintenance procedures.'
-    },
-    # Add more entries as necessary
-]
 
 # Set up Selenium Chrome options
 chrome_options = Options()
 chrome_options.add_argument("--headless")
 chrome_service = Service('C:/Users/Logic Supply/Desktop/Car Part Search/chromedriver.exe')
 
-driver = webdriver.Chrome(service=chrome_service, options=chrome_options)
+def create_driver():
+    return webdriver.Chrome(service=chrome_service, options=chrome_options)
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -42,8 +31,8 @@ def index():
         }
 
         platform = request.form['platform']
+        results = []
 
-        # Perform search based on selected platform
         if platform == 'ebay':
             results = search_ebay(car_details)
         elif platform == 'amazon':
@@ -52,8 +41,6 @@ def index():
             results = search_google(car_details)
         elif platform == 'rockauto':
             results = search_rockauto(car_details)
-        else:
-            results = []
 
         return render_template('results.html', results=results)
 
@@ -70,21 +57,26 @@ def search_ebay(car_details):
 
     search_url = base_url + search_query
 
-    driver.get(search_url)
-    time.sleep(3)  # Wait for the page to load
+    with create_driver() as driver:
+        driver.get(search_url)
+        time.sleep(3)
 
-    results = []
-    items = driver.find_elements("css selector", '.s-item')
-    for item in items:
-        title = item.find_element("css selector", '.s-item__title')
-        link = item.find_element("css selector", '.s-item__link')
-        img = item.find_element("css selector", '.s-item__image-img').get_attribute('src') if item.find_elements("css selector", '.s-item__image-img') else None
-        if title and link:
-            results.append({
-                'title': title.text,
-                'link': link.get_attribute('href'),
-                'img': img
-            })
+        results = []
+        items = driver.find_elements(By.CSS_SELECTOR, '.s-item')
+
+        for item in items:
+            try:
+                title = item.find_element(By.CSS_SELECTOR, '.s-item__title')
+                link = item.find_element(By.CSS_SELECTOR, '.s-item__link')
+                img = item.find_element(By.CSS_SELECTOR, '.s-item__image-img').get_attribute('src') if item.find_elements(By.CSS_SELECTOR, '.s-item__image-img') else None
+
+                results.append({
+                    'title': title.text,
+                    'link': link.get_attribute('href'),
+                    'img': img
+                })
+            except Exception as e:
+                print(f"Error extracting eBay item: {e}")
 
     return results
 
@@ -99,21 +91,26 @@ def search_amazon(car_details):
 
     search_url = base_url + search_query
 
-    driver.get(search_url)
-    time.sleep(3)
+    with create_driver() as driver:
+        driver.get(search_url)
+        time.sleep(3)
 
-    results = []
-    items = driver.find_elements("css selector", '.s-main-slot .s-result-item')
-    for item in items:
-        title = item.find_element("css selector", 'h2 .a-link-normal')
-        link = item.find_element("css selector", 'h2 .a-link-normal').get_attribute('href')
-        img = item.find_element("css selector", 'img.s-image').get_attribute('src') if item.find_elements("css selector", 'img.s-image') else None
-        if title and link:
-            results.append({
-                'title': title.text,
-                'link': link,
-                'img': img
-            })
+        results = []
+        items = driver.find_elements(By.CSS_SELECTOR, '.s-main-slot .s-result-item')
+
+        for item in items:
+            try:
+                title = item.find_element(By.CSS_SELECTOR, 'h2 .a-link-normal')
+                link = title.get_attribute('href')
+                img = item.find_element(By.CSS_SELECTOR, 'img.s-image').get_attribute('src') if item.find_elements(By.CSS_SELECTOR, 'img.s-image') else None
+
+                results.append({
+                    'title': title.text,
+                    'link': link,
+                    'img': img
+                })
+            except Exception as e:
+                print(f"Error extracting Amazon item: {e}")
 
     return results
 
@@ -128,19 +125,24 @@ def search_google(car_details):
 
     search_url = base_url + f"q={search_query}"
 
-    driver.get(search_url)
-    time.sleep(3)
+    with create_driver() as driver:
+        driver.get(search_url)
+        time.sleep(3)
 
-    results = []
-    items = driver.find_elements("css selector", '.g')
-    for item in items:
-        title = item.find_element("css selector", 'h3')
-        link = item.find_element("css selector", 'a').get_attribute('href') if item.find_elements("css selector", 'a') else None
-        if title and link:
-            results.append({
-                'title': title.text,
-                'link': link
-            })
+        results = []
+        items = driver.find_elements(By.CSS_SELECTOR, '.g')
+
+        for item in items:
+            try:
+                title = item.find_element(By.CSS_SELECTOR, 'h3')
+                link = item.find_element(By.CSS_SELECTOR, 'a').get_attribute('href') if item.find_elements(By.CSS_SELECTOR, 'a') else None
+
+                results.append({
+                    'title': title.text,
+                    'link': link
+                })
+            except Exception as e:
+                print(f"Error extracting Google item: {e}")
 
     return results
 
@@ -155,21 +157,26 @@ def search_rockauto(car_details):
 
     search_url = base_url + search_query.replace(" ", "+")
 
-    driver.get(search_url)
-    time.sleep(3)
+    with create_driver() as driver:
+        driver.get(search_url)
+        time.sleep(3)
 
-    results = []
-    items = driver.find_elements("css selector", '.result-item')  # Ensure this selector is correct
-    for item in items:
-        title = item.find_element("css selector", '.part-name')  # Ensure this selector is correct
-        link = item.find_element("css selector", 'a').get_attribute('href') if item.find_elements("css selector", 'a') else None
-        img = item.find_element("css selector", 'img').get_attribute('src') if item.find_elements("css selector", 'img') else None
-        if title and link:
-            results.append({
-                'title': title.text.strip(),
-                'link': link,
-                'img': img
-            })
+        results = []
+        items = driver.find_elements(By.CSS_SELECTOR, '.result-item')  # Ensure this selector is correct
+
+        for item in items:
+            try:
+                title = item.find_element(By.CSS_SELECTOR, '.part-name')  # Ensure this selector is correct
+                link = item.find_element(By.CSS_SELECTOR, 'a').get_attribute('href') if item.find_elements(By.CSS_SELECTOR, 'a') else None
+                img = item.find_element(By.CSS_SELECTOR, 'img').get_attribute('src') if item.find_elements(By.CSS_SELECTOR, 'img') else None
+
+                results.append({
+                    'title': title.text.strip(),
+                    'link': link,
+                    'img': img
+                })
+            except Exception as e:
+                print(f"Error extracting RockAuto item: {e}")
 
     return results
 
