@@ -4,21 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Search Results</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css">
 </head>
 <body>
-    <h1>Search Results</h1>
-    <a href="/">New Search</a>
-    <ul>
-        {% for result in results %}
-        <li>
-            <a href="{{ result.link }}" target="_blank">
-                {% if result.img %}
-                <img src="{{ result.img }}" alt="{{ result.title }}" style="width:100px;">
-                {% endif %}
-                <p>{{ result.title }}</p>
-            </a>
-        </li>
-        {% endfor %}
-    </ul>
+    <div class="container">
+        <h1 class="mt-5">Search Results</h1>
+        <ul class="list-group mt-4">
+            {% for result in results %}
+                <li class="list-group-item">
+                    <a href="{{ result.link }}" target="_blank">{{ result.title }}</a>
+                    {% if result.img %}
+                        <img src="{{ result.img }}" alt="{{ result.title }}" class="img-thumbnail" style="max-width: 100px;">
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+        <a href="/" class="btn btn-secondary mt-3">Back</a>
+    </div>
 </body>
 </html>
